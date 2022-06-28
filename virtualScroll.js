@@ -31,7 +31,7 @@ class VirtualScroll {
     this._list = list.map((item, index) => {
       return {
         item: item,
-        height: 40,
+        height: 30,
         index: index
       }
     })
@@ -82,7 +82,7 @@ class VirtualScroll {
     if (withCache(headIndex, tailIndex, this.cacheList)) {
       const headIndexWithCache = this.cacheList[0].index
       const offsetToEdge = _offset - calc(this._list, 0, headIndexWithCache)
-      this.container.style.transform = `translateY(-${offsetToEdge}px)`
+      this.itemWrapper.style.transform = `translateY(-${offsetToEdge}px)`
       return
     }
     console.log('重新渲染')
@@ -96,7 +96,7 @@ class VirtualScroll {
     )
 
     //   计算缓存列表
-    this.cacheList = this._list.slice(headIndexWithCache, tailIndexWithCache + 1)
+    this.cacheList = this._list.slice(headIndexWithCache, tailIndexWithCache)
 
     this.offsetToEdge = _offset - calc(this._list, 0, headIndexWithCache)
 
@@ -126,7 +126,7 @@ class VirtualScroll {
     this.itemWrapper.appendChild(fragment)
 
     //   每次监听到事件都重新渲染，然后计算出向上偏移量
-    this.itemWrapper.style.transform = `translateY(-${this.renderOffset}px)`
+    this.itemWrapper.style.transform = `translateY(-${this.offsetToEdge}px)`
 
     // 生成虚拟列表并保存到wrapper
   }
@@ -212,9 +212,10 @@ function withCache(head, end, cacheList) {
   const cacheHead = cacheList[0]
   const cacheEnd = cacheList[cacheList.length - 1]
 
-  const within = (num, min, max) => {
-    num >= min && num <= max
-  }
+  const within = (num, min, max) => num >= min && num <= max
 
-  return within(head, cacheHead, cacheEnd) && within(end, cacheHead, cacheEnd)
+  return (
+    within(head, cacheHead.index, cacheEnd.index) &&
+    within(end, cacheHead.index, cacheEnd.index)
+  )
 }
